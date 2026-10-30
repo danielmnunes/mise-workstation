@@ -1,0 +1,9 @@
+# Arquivos temporários e de editor
+*.tmp
+*.swp
+*~
+.DS_Store
+
+# Backups e logs locais
+*.bak
+*.log

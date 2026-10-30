@@ -1,0 +1,127 @@
+# ==============================================================================
+# mise (mise-en-place) - Configuração Completa de Ferramentas & Task Runner
+# https://mise.jdx.dev
+#
+# Para aplicar globalmente:
+#   mkdir -p ~/.config/mise && cp -r config.toml tasks ~/.config/mise/
+#
+# Comandos principais:
+#   mise run bootstrap        # Configuração completa da máquina (Sistema, Apps, Mise, Agentes)
+#   mise run check:all        # Apenas verifica o status de tudo sem instalar nada
+# ==============================================================================
+
+[settings]
+experimental = true
+legacy_version_file = true
+jobs = 4
+shims = true
+
+# ==============================================================================
+# 1. DECLARAÇÃO DE FERRAMENTAS E RUNTIMES (Gerenciados diretamente pelo Mise)
+# ==============================================================================
+[tools]
+# --- Runtimes e Linguagens de Programação ---
+node = "lts"             # Node.js LTS (substitui NVM)
+bun = "latest"           # Bun runtime & bundler
+pnpm = "latest"          # Gerenciador de pacotes rápido e eficiente
+java = "liberica-25"     # BellSoft Liberica OpenJDK 25 (substitui SDKMAN)
+go = "latest"            # Go programming language
+rust = "latest"          # Rust toolchain (cargo, rustc, etc.)
+python = "3.14"          # Python compilado isolado do sistema operacional
+uv = "latest"            # Astral uv: gerenciador moderno de pacotes Python
+
+# --- Ferramentas de Build & Frameworks JVM ---
+maven = "latest"         # Apache Maven
+gradle = "latest"        # Gradle Build Tool
+spring-boot = "4.1.1"    # Spring Boot CLI
+
+# --- Utilitários Modernos de Terminal (Substituindo pacotes manuais do APT) ---
+bat = "latest"           # Substituto do 'cat' com syntax highlight e git
+eza = "latest"           # Substituto moderno do 'ls' com suporte a git e cores
+ripgrep = "latest"       # 'rg' - pesquisa textual em regex ultra-rápida
+fd = "latest"            # Substituto simples, intuitivo e rápido do 'find'
+zoxide = "latest"        # 'z' - navegador de diretórios inteligente
+fzf = "latest"           # Fuzzy finder interativo de linha de comando
+jq = "latest"            # Processador e formatador JSON
+delta = "latest"         # 'git-delta': paginador com syntax highlight para git diff
+starship = "latest"      # Prompt minimalista, informativo e extremamente rápido
+fastfetch = "latest"     # Exibição rápida de dados do sistema
+gh = "latest"            # GitHub CLI oficial
+glab = "latest"          # GitLab CLI oficial
+d2 = "latest"            # Linguagem declarativa para diagramas
+tsuru = "latest"         # CLI oficial da PaaS Tsuru
+
+# --- Binários Globais de Ecossistemas ---
+"cargo:worktrunk" = "latest"   # 'wt' para gerenciamento de git worktrees
+"npm:@usebruno/cli" = "latest" # 'bru' executor de coleções de teste de API do Bruno
+
+
+# ==============================================================================
+# 2. TAREFAS DE AUTOMAÇÃO E PROVISIONAMENTO (TASK RUNNER)
+# ==============================================================================
+[tasks.bootstrap]
+description = "Provisiona uma máquina completa do zero (Sistema, Apps, Mise e Agentes)"
+depends = [
+  "system:deps",
+  "system:docker",
+  "install:fonts",
+  "install:flatpaks",
+  "install:snaps",
+  "mise:tools",
+  "install:agents"
+]
+run = """
+echo "═══════════════════════════════════════════════════════════════════"
+echo "🎉 PARABÉNS! Sua estação de trabalho está 100% pronta para produzir!"
+echo "═══════════════════════════════════════════════════════════════════"
+"""
+
+[tasks."mise:tools"]
+description = "Instala todas as ferramentas declaradas na seção [tools]"
+run = "mise install --yes"
+
+[tasks."system:deps"]
+description = "Instala compiladores base e bibliotecas C/C++ via APT"
+run = "./tasks/system-deps.sh"
+
+[tasks."system:docker"]
+description = "Instala Docker Engine, Docker Compose e configura permissões de usuário"
+run = "./tasks/docker.sh"
+
+[tasks."install:fonts"]
+description = "Instala JetBrains Mono Nerd Font para suporte a ícones no terminal"
+run = "./tasks/fonts.sh"
+
+[tasks."install:flatpaks"]
+description = "Configura Flathub e instala Bitwarden, Bruno e Obsidian"
+run = "./tasks/flatpaks.sh"
+
+[tasks."install:snaps"]
+description = "Instala e verifica aplicativos Snap (Firefox, etc.)"
+run = "./tasks/snaps.sh"
+
+[tasks."install:agents"]
+description = "Instala e atualiza os Agentes de IA (OpenCode, Codex, Herdr, etc.)"
+run = "./tasks/agents.sh"
+
+[tasks."check:all"]
+description = "Executa verificação de status de todos os módulos sem instalar nada"
+run = """
+echo "=== 1. DEPENDÊNCIAS DE SISTEMA ==="
+./tasks/system-deps.sh --check
+echo ""
+echo "=== 2. DOCKER ==="
+./tasks/docker.sh --check
+echo ""
+echo "=== 3. FONTES NERD ==="
+./tasks/fonts.sh --check
+echo ""
+echo "=== 4. FLATPAKS ==="
+./tasks/flatpaks.sh --check
+echo ""
+echo "=== 5. SNAPS ==="
+./tasks/snaps.sh --check
+echo ""
+echo "=== 6. AGENTES DE IA ==="
+./tasks/agents.sh --check
+"""
